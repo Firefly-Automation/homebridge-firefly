@@ -1,19 +1,23 @@
 
-# Home Assistant for Homebridge
+# Credits
 
-Control your accessories from [Home Assistant](http://home-assistant.io) with
+This plugin was forked from the [Home Assistant HomeBridge plugin](https://github.com/home-assistant/homebridge-homeassistant)
+
+# Firefly for Homebridge
+
+Control your accessories from [Firefly](http://github.com/Firefly-Automation) with
 Siri and HomeKit. Set it up and poof, all of your supported accessories will be
 instantly controllable via Siri.
 
 ## Device Support
 
-Home Assistant is a home automation platform already, so this plugin aims to
+Firefly is a home automation platform already, so this plugin aims to
 just expose your devices in a way that you can control them with Siri. While
 you can integrate your accessories into HomeKit for automations, the goals of
 this plugin are strictly to allow Siri to be a frontend for your accessories.
 
-When you set up the Home Assistant plugin, all you have to do is point it at
-your Home Assistant server. The plugin pulls all your devices and exposes them
+When you set up the Firefly plugin, all you have to do is point it at
+your Firefly server. The plugin pulls all your devices and exposes them
 automatically. Easy peasey.
 
 Here's a list of the devices that are currently exposed:

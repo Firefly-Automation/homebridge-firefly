@@ -1,14 +1,13 @@
 {
-  "name": "homebridge-homeassistant",
+  "name": "homebridge-firefly",
   "version": "2.0.6",
-  "description": "Homebridge plugin for Home Assistant: https://home-assistant.io",
+  "description": "Homebridge plugin for Firefly",
   "license": "Apache-2.0",
   "keywords": [
     "homebridge-plugin",
     "homebridge",
     "plugin",
-    "home-assistant",
-    "home assistant",
+    "firefly",
     "home",
     "assistant",
     "homekit",
@@ -16,10 +15,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/home-assistant/homebridge-homeassistant.git"
+    "url": "git://github.com/Firefly-Automation/homebridge-firefly.git"
   },
   "bugs": {
-    "url": "http://github.com/home-assistant/homebridge-homeassistant/issues"
+    "url": "http://github.com/Firefly-Automation/homebridge-firefly/issues"
   },
   "engines": {
     "node": ">=4.3.2",

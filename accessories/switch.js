@@ -4,23 +4,18 @@ let Service;
 let Characteristic;
 let communicationError;
 
-function HomeAssistantSwitch(log, data, client, type) {
+function FireflySwitch(log, data, client, type) {
   // device info
   this.domain = type || 'switch';
   this.data = data;
-  this.entity_id = data.entity_id;
-  this.uuid_base = data.entity_id;
-  if (data.attributes && data.attributes.friendly_name) {
-    this.name = data.attributes.friendly_name;
-  } else {
-    this.name = data.entity_id.split('.').pop().replace(/_/g, ' ');
-  }
-
+  this.entity_id = data.ff_id;
+  this.uuid_base = data.ff_id;
+  this.name = data.alias;
   this.client = client;
   this.log = log;
 }
 
-HomeAssistantSwitch.prototype = {
+FireflySwitch.prototype = {
   onEvent(oldState, newState) {
     this.switchService.getCharacteristic(Characteristic.On)
         .setValue(newState.state === 'on', null, 'internal');
@@ -28,7 +23,7 @@ HomeAssistantSwitch.prototype = {
   getPowerState(callback) {
     this.client.fetchState(this.entity_id, (data) => {
       if (data) {
-        const powerState = data.state === 'on';
+        const powerState = data.request_values.STATE === true;
         callback(null, powerState);
       } else {
         callback(communicationError);
@@ -48,6 +43,7 @@ HomeAssistantSwitch.prototype = {
     if (powerOn) {
       this.log(`Setting power state on the '${this.name}' to on`);
 
+      //TODO: Update this section. These updates will depend on updates to callService in index.js
       this.client.callService(this.domain, 'turn_on', serviceData, (data) => {
         if (this.domain === 'scene') {
           this.switchService.getCharacteristic(Characteristic.On)
@@ -90,7 +86,7 @@ HomeAssistantSwitch.prototype = {
     }
 
     informationService
-          .setCharacteristic(Characteristic.Manufacturer, 'Home Assistant')
+          .setCharacteristic(Characteristic.Manufacturer, 'Firefly')
           .setCharacteristic(Characteristic.Model, model)
           .setCharacteristic(Characteristic.SerialNumber, this.entity_id);
 
@@ -110,13 +106,13 @@ HomeAssistantSwitch.prototype = {
 
 };
 
-function HomeAssistantSwitchPlatform(oService, oCharacteristic, oCommunicationError) {
+function FireflySwitchPlatform(oService, oCharacteristic, oCommunicationError) {
   Service = oService;
   Characteristic = oCharacteristic;
   communicationError = oCommunicationError;
 
-  return HomeAssistantSwitch;
+  return FireflySwitch;
 }
 
-module.exports = HomeAssistantSwitchPlatform;
-module.exports.HomeAssistantSwitch = HomeAssistantSwitch;
+module.exports = FireflySwitchPlatform;
+module.exports.FireflySwitch = FireflySwitch;

@@ -4,17 +4,13 @@ var Service;
 var Characteristic;
 var communicationError;
 
-class HomeAssistantDeviceTracker {
+class FireflyDeviceTracker {
   constructor(log, data, client, service, characteristic, onValue, offValue) {
         // device info
     this.data = data;
-    this.entity_id = data.entity_id;
-    this.uuid_base = data.entity_id;
-    if (data.attributes && data.attributes.friendly_name) {
-      this.name = data.attributes.friendly_name;
-    } else {
-      this.name = data.entity_id.split('.').pop().replace(/_/g, ' ');
-    }
+    this.entity_id = data.ff_id;
+    this.uuid_base = data.ff_id;
+    this.name = data.alias;
 
     this.entity_type = data.entity_id.split('.')[0];
 
@@ -54,7 +50,7 @@ class HomeAssistantDeviceTracker {
     var informationService = new Service.AccessoryInformation();
 
     informationService
-          .setCharacteristic(Characteristic.Manufacturer, 'Home Assistant')
+          .setCharacteristic(Characteristic.Manufacturer, 'Firefly')
           .setCharacteristic(Characteristic.Model, ' Device Tracker')
           .setCharacteristic(Characteristic.SerialNumber, this.entity_id);
 
@@ -62,24 +58,24 @@ class HomeAssistantDeviceTracker {
   }
 }
 
-function HomeAssistantDeviceTrackerFactory(log, data, client) {
+function FireflyDeviceTrackerFactory(log, data, client) {
   if (!(data.attributes)) {
     return null;
   }
-  return new HomeAssistantDeviceTracker(log, data, client,
+  return new FireflyDeviceTracker(log, data, client,
       Service.OccupancySensor,
       Characteristic.OccupancyDetected,
       Characteristic.OccupancyDetected.OCCUPANCY_DETECTED,
       Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED);
 }
 
-function HomeAssistantDeviceTrackerFactoryPlatform(oService, oCharacteristic, oCommunicationError) {
+function FireflyDeviceTrackerFactoryPlatform(oService, oCharacteristic, oCommunicationError) {
   Service = oService;
   Characteristic = oCharacteristic;
   communicationError = oCommunicationError;
 
-  return HomeAssistantDeviceTrackerFactory;
+  return FireflyDeviceTrackerFactory;
 }
 
-module.exports = HomeAssistantDeviceTrackerFactoryPlatform;
-module.exports.HomeAssistantDeviceTrackerFactory = HomeAssistantDeviceTrackerFactory;
+module.exports = FireflyDeviceTrackerFactoryPlatform;
+module.exports.FireflyDeviceTrackerFactory = FireflyDeviceTrackerFactory;

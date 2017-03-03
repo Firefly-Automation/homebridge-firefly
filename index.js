@@ -8,21 +8,21 @@ const EventSource = require('eventsource');
 
 const communicationError = new Error('Can not communicate with Home Assistant.');
 
-let HomeAssistantBinarySensorFactory;
-let HomeAssistantCoverFactory;
-let HomeAssistantFan;
-let HomeAssistantLight;
-let HomeAssistantLock;
-let HomeAssistantMediaPlayer;
-let HomeAssistantSensorFactory;
-let HomeAssistantSwitch;
-let HomeAssistantDeviceTrackerFactory;
+let FireflyBinarySensorFactory;
+let FireflyCoverFactory;
+let FireflyFan;
+let FireflyLight;
+let FireflyLock;
+let FireflyMediaPlayer;
+let FireflySensorFactory;
+let FireflySwitch;
+let FireflyDeviceTrackerFactory;
 
-function HomeAssistantPlatform(log, config, api) {
+function FireflyPlatform(log, config, api) {
   // auth info
   this.host = config.host;
   this.password = config.password;
-  this.supportedTypes = config.supported_types || ['binary_sensor', 'cover', 'device_tracker', 'fan', 'input_boolean', 'light', 'lock', 'media_player', 'scene', 'sensor', 'switch'];
+  this.supportedTypes = config.supported_types || ['binary_sensor', 'cover', 'device_tracker', 'fan', 'input_boolean', 'light', 'lock', 'media_player', 'scene', 'sensor', 'switch']; //TODO: Rename these to match Firefly
   this.foundAccessories = [];
   this.logging = config.logging !== undefined ? config.logging : true;
 
@@ -58,7 +58,8 @@ function HomeAssistantPlatform(log, config, api) {
   });
 }
 
-HomeAssistantPlatform.prototype = {
+FireflyPlatform.prototype = {
+  // TODO: Update this function.
   request(method, path, options, callback) {
     const requestURL = `${this.host}/api${path}`;
     /* eslint-disable no-param-reassign */
@@ -92,6 +93,7 @@ HomeAssistantPlatform.prototype = {
       callback(error, response, JSON.parse(body));
     });
   },
+  // TODO: Update this function.
   fetchState(entityID, callback) {
     this.request('GET', `/states/${entityID}`, {}, (error, response, data) => {
       if (error) {
@@ -101,6 +103,7 @@ HomeAssistantPlatform.prototype = {
       }
     });
   },
+  // TODO: Update this function.
   callService(domain, service, serviceData, callback) {
     const options = {};
     options.body = serviceData;
@@ -114,7 +117,7 @@ HomeAssistantPlatform.prototype = {
     });
   },
   accessories(callback) {
-    this.log('Fetching HomeAssistant devices.');
+    this.log('Fetching Firefly devices.');
 
     const that = this;
 
@@ -127,7 +130,8 @@ HomeAssistantPlatform.prototype = {
 
       for (let i = 0; i < data.length; i++) {
         const entity = data[i];
-        const entityType = entity.entity_id.split('.')[0];
+        // TODO: add common_type into Firefly. This should be light, sensor etc.
+        const entityType = entity.common_type;
 
         /* eslint-disable no-continue */
         // ignore devices that are not in the list of supported types
@@ -136,49 +140,47 @@ HomeAssistantPlatform.prototype = {
         }
 
         // ignore hidden devices
-        if (entity.attributes && entity.attributes.hidden) {
+        if (!entity.export_ui) {
           continue;
         }
 
+        // TODO: add homebridge_hidden to Firefly.
         // ignore homebridge hidden devices
-        if (entity.attributes && entity.attributes.homebridge_hidden) {
+        if (entity.homebridge_hidden) {
           continue;
         }
         /* eslint-enable no-continue */
 
+        // TODO: add homebridge_name to Firefly.
         // support providing custom names
-        if (entity.attributes && entity.attributes.homebridge_name) {
-          entity.attributes.friendly_name = entity.attributes.homebridge_name;
+        if (entity.homebridge_name) {
+          entity.alias = homebridge_name;
         }
 
         let accessory = null;
 
         if (entityType === 'light') {
-          accessory = new HomeAssistantLight(that.log, entity, that);
+          accessory = new FireflyLight(that.log, entity, that);
         } else if (entityType === 'switch') {
-          accessory = new HomeAssistantSwitch(that.log, entity, that);
+          accessory = new FireflySwitch(that.log, entity, that);
         } else if (entityType === 'lock') {
-          accessory = new HomeAssistantLock(that.log, entity, that);
-        } else if (entityType === 'garage_door') {
-          that.log.error('Garage_doors are no longer supported by homebridge-homeassistant. Please upgrade to a newer version of Home Assistant to continue using this entity (with the new cover component).');
+          accessory = new FireflyLock(that.log, entity, that);
         } else if (entityType === 'scene') {
-          accessory = new HomeAssistantSwitch(that.log, entity, that, 'scene');
-        } else if (entityType === 'rollershutter') {
-          that.log.error('Rollershutters are no longer supported by homebridge-homeassistant. Please upgrade to a newer version of Home Assistant to continue using this entity (with the new cover component).');
+          accessory = new FireflySwitch(that.log, entity, that, 'scene');
         } else if (entityType === 'input_boolean') {
-          accessory = new HomeAssistantSwitch(that.log, entity, that, 'input_boolean');
+          accessory = new FireflySwitch(that.log, entity, that, 'input_boolean');
         } else if (entityType === 'fan') {
-          accessory = new HomeAssistantFan(that.log, entity, that);
+          accessory = new FireflyFan(that.log, entity, that);
         } else if (entityType === 'cover') {
-          accessory = HomeAssistantCoverFactory(that.log, entity, that);
+          accessory = FireflyCoverFactory(that.log, entity, that);
         } else if (entityType === 'sensor') {
-          accessory = HomeAssistantSensorFactory(that.log, entity, that);
+          accessory = FireflySensorFactory(that.log, entity, that);
         } else if (entityType === 'device_tracker') {
-          accessory = HomeAssistantDeviceTrackerFactory(that.log, entity, that);
+          accessory = FireflyDeviceTrackerFactory(that.log, entity, that);
         } else if (entityType === 'media_player' && entity.attributes && entity.attributes.supported_features) {
-          accessory = new HomeAssistantMediaPlayer(that.log, entity, that);
+          accessory = new FireflyMediaPlayer(that.log, entity, that);
         } else if (entityType === 'binary_sensor' && entity.attributes && entity.attributes.sensor_class) {
-          accessory = HomeAssistantBinarySensorFactory(that.log, entity, that);
+          accessory = FireflyBinarySensorFactory(that.log, entity, that);
         }
 
         if (accessory) {
@@ -191,25 +193,25 @@ HomeAssistantPlatform.prototype = {
   },
 };
 
-function HomebridgeHomeAssistant(homebridge) {
+function HomebridgeFirefly(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
 
   /* eslint-disable global-require */
-  HomeAssistantLight = require('./accessories/light')(Service, Characteristic, communicationError);
-  HomeAssistantSwitch = require('./accessories/switch')(Service, Characteristic, communicationError);
-  HomeAssistantLock = require('./accessories/lock')(Service, Characteristic, communicationError);
-  HomeAssistantMediaPlayer = require('./accessories/media_player')(Service, Characteristic, communicationError);
-  HomeAssistantFan = require('./accessories/fan')(Service, Characteristic, communicationError);
-  HomeAssistantCoverFactory = require('./accessories/cover')(Service, Characteristic, communicationError);
-  HomeAssistantSensorFactory = require('./accessories/sensor')(Service, Characteristic, communicationError);
-  HomeAssistantBinarySensorFactory = require('./accessories/binary_sensor')(Service, Characteristic, communicationError);
-  HomeAssistantDeviceTrackerFactory = require('./accessories/device_tracker')(Service, Characteristic, communicationError);
+  FireflyLight = require('./accessories/light')(Service, Characteristic, communicationError);
+  FireflySwitch = require('./accessories/switch')(Service, Characteristic, communicationError);
+  FireflyLock = require('./accessories/lock')(Service, Characteristic, communicationError);
+  FireflyMediaPlayer = require('./accessories/media_player')(Service, Characteristic, communicationError);
+  FireflyFan = require('./accessories/fan')(Service, Characteristic, communicationError);
+  FireflyCoverFactory = require('./accessories/cover')(Service, Characteristic, communicationError);
+  FireflySensorFactory = require('./accessories/sensor')(Service, Characteristic, communicationError);
+  FireflyBinarySensorFactory = require('./accessories/binary_sensor')(Service, Characteristic, communicationError);
+  FireflyDeviceTrackerFactory = require('./accessories/device_tracker')(Service, Characteristic, communicationError);
   /* eslint-enable global-require */
 
-  homebridge.registerPlatform('homebridge-homeassistant', 'HomeAssistant', HomeAssistantPlatform, false);
+  homebridge.registerPlatform('homebridge-homeassistant', 'Firefly', FireflyPlatform, false);
 }
 
-module.exports = HomebridgeHomeAssistant;
+module.exports = HomebridgeFirefly;
 
-module.exports.platform = HomeAssistantPlatform;
+module.exports.platform = FireflyPlatform;

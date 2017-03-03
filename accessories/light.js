@@ -87,23 +87,19 @@ const LightUtil = {
 };
 /* eslint-enable */
 
-function HomeAssistantLight(log, data, client) {
+function FireflyLight(log, data, client) {
   // device info
   this.domain = 'light';
   this.data = data;
-  this.entity_id = data.entity_id;
-  this.uuid_base = data.entity_id;
-  if (data.attributes && data.attributes.friendly_name) {
-    this.name = data.attributes.friendly_name;
-  } else {
-    this.name = data.entity_id.split('.').pop().replace(/_/g, ' ');
-  }
+  this.entity_id = data.ff_id;
+  this.uuid_base = data.ff_id;
+  this.name = data.alias;
 
   this.client = client;
   this.log = log;
 }
 
-HomeAssistantLight.prototype = {
+FireflyLight.prototype = {
   features: Object.freeze({
     BRIGHTNESS: 1,
     COLOR_TEMP: 2,
@@ -360,7 +356,7 @@ HomeAssistantLight.prototype = {
     const informationService = new Service.AccessoryInformation();
 
     informationService
-          .setCharacteristic(Characteristic.Manufacturer, 'Home Assistant')
+          .setCharacteristic(Characteristic.Manufacturer, 'Firefly')
           .setCharacteristic(Characteristic.Model, 'Light')
           .setCharacteristic(Characteristic.SerialNumber, this.entity_id);
 
@@ -393,13 +389,13 @@ HomeAssistantLight.prototype = {
 
 };
 
-function HomeAssistantLightPlatform(oService, oCharacteristic, oCommunicationError) {
+function FireflyLightPlatform(oService, oCharacteristic, oCommunicationError) {
   Service = oService;
   Characteristic = oCharacteristic;
   communicationError = oCommunicationError;
 
-  return HomeAssistantLight;
+  return FireflyLight;
 }
 
-module.exports = HomeAssistantLightPlatform;
-module.exports.HomeAssistantLight = HomeAssistantLight;
+module.exports = FireflyLightPlatform;
+module.exports.FireflyLight = FireflyLight;

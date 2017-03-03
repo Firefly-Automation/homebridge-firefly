@@ -4,23 +4,19 @@ let Service;
 let Characteristic;
 let communicationError;
 
-function HomeAssistantLock(log, data, client) {
+function FireflyLock(log, data, client) {
   // device info
   this.domain = 'lock';
   this.data = data;
-  this.entity_id = data.entity_id;
-  this.uuid_base = data.entity_id;
-  if (data.attributes && data.attributes.friendly_name) {
-    this.name = data.attributes.friendly_name;
-  } else {
-    this.name = data.entity_id.split('.').pop().replace(/_/g, ' ');
-  }
+  this.entity_id = data.ff_id;
+  this.uuid_base = data.ff_id;
+  this.name = data.alias;
 
   this.client = client;
   this.log = log;
 }
 
-HomeAssistantLock.prototype = {
+FireflyLock.prototype = {
   onEvent(oldState, newState) {
     const lockState = newState.state === 'unlocked' ? 0 : 1;
     this.lockService.getCharacteristic(Characteristic.LockCurrentState)
@@ -77,7 +73,7 @@ HomeAssistantLock.prototype = {
     const informationService = new Service.AccessoryInformation();
 
     informationService
-          .setCharacteristic(Characteristic.Manufacturer, 'Home Assistant')
+          .setCharacteristic(Characteristic.Manufacturer, 'Firefly')
           .setCharacteristic(Characteristic.Model, 'Lock')
           .setCharacteristic(Characteristic.SerialNumber, this.entity_id);
 
@@ -95,13 +91,13 @@ HomeAssistantLock.prototype = {
 
 };
 
-function HomeAssistantLockPlatform(oService, oCharacteristic, oCommunicationError) {
+function FireflyLockPlatform(oService, oCharacteristic, oCommunicationError) {
   Service = oService;
   Characteristic = oCharacteristic;
   communicationError = oCommunicationError;
 
-  return HomeAssistantLock;
+  return FireflyLock;
 }
 
-module.exports = HomeAssistantLockPlatform;
-module.exports.HomeAssistantLock = HomeAssistantLock;
+module.exports = FireflyLockPlatform;
+module.exports.FireflyLock = FireflyLock;

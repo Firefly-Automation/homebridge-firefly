@@ -4,7 +4,7 @@ let Service;
 let Characteristic;
 let communicationError;
 
-function HomeAssistantMediaPlayer(log, data, client) {
+function FireflyMediaPlayer(log, data, client) {
   /* eslint-disable no-unused-vars */
   const SUPPORT_PAUSE = 1;
   const SUPPORT_SEEK = 2;
@@ -53,7 +53,7 @@ function HomeAssistantMediaPlayer(log, data, client) {
   this.log = log;
 }
 
-HomeAssistantMediaPlayer.prototype = {
+FireflyMediaPlayer.prototype = {
   onEvent(oldState, newState) {
     this.switchService.getCharacteristic(Characteristic.On)
         .setValue(newState.state === this.onState, null, 'internal');
@@ -109,7 +109,7 @@ HomeAssistantMediaPlayer.prototype = {
     const informationService = new Service.AccessoryInformation();
 
     informationService
-          .setCharacteristic(Characteristic.Manufacturer, 'Home Assistant')
+          .setCharacteristic(Characteristic.Manufacturer, 'Firefly')
           .setCharacteristic(Characteristic.Model, 'Media Player')
           .setCharacteristic(Characteristic.SerialNumber, this.entity_id);
 
@@ -123,13 +123,13 @@ HomeAssistantMediaPlayer.prototype = {
 
 };
 
-function HomeAssistantMediaPlayerPlatform(oService, oCharacteristic, oCommunicationError) {
+function FireflyMediaPlayerPlatform(oService, oCharacteristic, oCommunicationError) {
   Service = oService;
   Characteristic = oCharacteristic;
   communicationError = oCommunicationError;
 
-  return HomeAssistantMediaPlayer;
+  return FireflyMediaPlayer;
 }
 
-module.exports = HomeAssistantMediaPlayerPlatform;
-module.exports.HomeAssistantMediaPlayer = HomeAssistantMediaPlayer;
+module.exports = FireflyMediaPlayerPlatform;
+module.exports.FireflyMediaPlayer = FireflyMediaPlayer;

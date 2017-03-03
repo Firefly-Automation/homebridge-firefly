@@ -8,17 +8,13 @@ function toTitleCase(str) {
   return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }
 
-class HomeAssistantBinarySensor {
+class FireflyBinarySensor {
   constructor(log, data, client, service, characteristic, onValue, offValue) {
     // device info
     this.data = data;
-    this.entity_id = data.entity_id;
-    this.uuid_base = data.entity_id;
-    if (data.attributes && data.attributes.friendly_name) {
-      this.name = data.attributes.friendly_name;
-    } else {
-      this.name = data.entity_id.split('.').pop().replace(/_/g, ' ');
-    }
+    this.entity_id = data.ff_id;
+    this.uuid_base = data.ff_id;
+    this.name = data.alias;
 
     this.entity_type = data.entity_id.split('.')[0];
 
@@ -58,7 +54,7 @@ class HomeAssistantBinarySensor {
     const informationService = new Service.AccessoryInformation();
 
     informationService
-          .setCharacteristic(Characteristic.Manufacturer, 'Home Assistant')
+          .setCharacteristic(Characteristic.Manufacturer, 'Firefly')
           .setCharacteristic(Characteristic.Model, `${toTitleCase(this.data.attributes.sensor_class)} Binary Sensor`)
           .setCharacteristic(Characteristic.SerialNumber, this.entity_id);
 
@@ -66,37 +62,39 @@ class HomeAssistantBinarySensor {
   }
 }
 
-function HomeAssistantBinarySensorFactory(log, data, client) {
+function FireflyBinarySensorFactory(log, data, client) {
   if (!(data.attributes && data.attributes.sensor_class)) {
     return null;
   }
+
+  //TODO: Figure out how I want to map out the sensor class. Would this be the device_type? So device_type=MOTION, common_type=sensor.
   switch (data.attributes.sensor_class) {
     case 'moisture':
-      return new HomeAssistantBinarySensor(log, data, client,
+      return new FireflyBinarySensor(log, data, client,
                                            Service.LeakSensor,
                                            Characteristic.LeakDetected,
                                            Characteristic.LeakDetected.LEAK_DETECTED,
                                            Characteristic.LeakDetected.LEAK_NOT_DETECTED);
     case 'motion':
-      return new HomeAssistantBinarySensor(log, data, client,
+      return new FireflyBinarySensor(log, data, client,
                                            Service.MotionSensor,
                                            Characteristic.MotionDetected,
                                            true,
                                            false);
     case 'occupancy':
-      return new HomeAssistantBinarySensor(log, data, client,
+      return new FireflyBinarySensor(log, data, client,
                                            Service.OccupancySensor,
                                            Characteristic.OccupancyDetected,
                                            Characteristic.OccupancyDetected.OCCUPANCY_DETECTED,
                                            Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED);
     case 'opening':
-      return new HomeAssistantBinarySensor(log, data, client,
+      return new FireflyBinarySensor(log, data, client,
                                            Service.ContactSensor,
                                            Characteristic.ContactSensorState,
                                            Characteristic.ContactSensorState.CONTACT_NOT_DETECTED,
                                            Characteristic.ContactSensorState.CONTACT_DETECTED);
     case 'smoke':
-      return new HomeAssistantBinarySensor(log, data, client,
+      return new FireflyBinarySensor(log, data, client,
                                            Service.SmokeSensor,
                                            Characteristic.SmokeDetected,
                                            Characteristic.SmokeDetected.SMOKE_DETECTED,
@@ -109,13 +107,13 @@ function HomeAssistantBinarySensorFactory(log, data, client) {
   }
 }
 
-function HomeAssistantBinarySensorPlatform(oService, oCharacteristic, oCommunicationError) {
+function FireflyBinarySensorPlatform(oService, oCharacteristic, oCommunicationError) {
   Service = oService;
   Characteristic = oCharacteristic;
   communicationError = oCommunicationError;
 
-  return HomeAssistantBinarySensorFactory;
+  return FireflyBinarySensorFactory;
 }
 
-module.exports = HomeAssistantBinarySensorPlatform;
-module.exports.HomeAssistantBinarySensorFactory = HomeAssistantBinarySensorFactory;
+module.exports = FireflyBinarySensorPlatform;
+module.exports.FireflyBinarySensorFactory = FireflyBinarySensorFactory;

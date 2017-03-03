@@ -4,20 +4,16 @@ let Service;
 let Characteristic;
 let communicationError;
 
-class HomeAssistantCover {
+class FireflyCover {
   constructor(log, data, client) {
     this.client = client;
     this.log = log;
     // device info
     this.domain = 'cover';
     this.data = data;
-    this.entity_id = data.entity_id;
-    this.uuid_base = data.entity_id;
-    if (data.attributes && data.attributes.friendly_name) {
-      this.name = data.attributes.friendly_name;
-    } else {
-      this.name = data.entity_id.split('.').pop().replace(/_/g, ' ');
-    }
+    this.entity_id = data.ff_id;
+    this.uuid_base = data.ff_id;
+    this.name = data.alias;
   }
 
   onEvent(oldState, newState) {
@@ -42,7 +38,7 @@ class HomeAssistantCover {
   getServices() {
     const informationService = new Service.AccessoryInformation();
     informationService
-          .setCharacteristic(Characteristic.Manufacturer, 'Home Assistant')
+          .setCharacteristic(Characteristic.Manufacturer, 'Firefly')
           .setCharacteristic(Characteristic.SerialNumber, this.entity_id)
           .setCharacteristic(Characteristic.Model, this.model);
 
@@ -75,7 +71,7 @@ class HomeAssistantCover {
   }
 }
 
-class HomeAssistantGarageDoor extends HomeAssistantCover {
+class FireflyGarageDoor extends FireflyCover {
   constructor(log, data, client) {
     super(log, data, client);
     this.model = 'Garage Door';
@@ -98,7 +94,7 @@ class HomeAssistantGarageDoor extends HomeAssistantCover {
   }
 }
 
-class HomeAssistantRollershutter extends HomeAssistantCover {
+class FireflyRollershutter extends FireflyCover {
   constructor(log, data, client) {
     super(log, data, client);
     this.model = 'Rollershutter';
@@ -134,7 +130,7 @@ class HomeAssistantRollershutter extends HomeAssistantCover {
   }
 }
 
-class HomeAssistantRollershutterBinary extends HomeAssistantRollershutter {
+class FireflyRollershutterBinary extends FireflyRollershutter {
   transformData(data) {
     return (data && data.state) ? ((data.state === 'open') * 100) : null;
   }
@@ -154,34 +150,34 @@ class HomeAssistantRollershutterBinary extends HomeAssistantRollershutter {
   }
 }
 
-function HomeAssistantCoverFactory(log, data, client) {
+function FireflyCoverFactory(log, data, client) {
   if (!data.attributes) {
     return null;
   }
 
   if (data.attributes.homebridge_cover_type === 'garage_door') {
-    return new HomeAssistantGarageDoor(log, data, client);
+    return new FireflyGarageDoor(log, data, client);
   } else if (data.attributes.homebridge_cover_type === 'rollershutter') {
     if (data.attributes.current_position !== undefined) {
-      return new HomeAssistantRollershutter(log, data, client);
+      return new FireflyRollershutter(log, data, client);
     }
-    return new HomeAssistantRollershutterBinary(log, data, client);
+    return new FireflyRollershutterBinary(log, data, client);
   }
   log.error(`'${data.entity_id}' is a cover but does not have a 'homebridge_cover_type' property set. ` +
             'You must set it to either \'rollershutter\' or \'garage_door\' in the customize section ' +
-            'of your Home Assistant configuration. It will not be available to Homebridge until you do. ' +
+            'of your Firefly configuration. It will not be available to Homebridge until you do. ' +
             'See the README.md for more information. ' +
             'The attributes that were found are:', JSON.stringify(data.attributes));
 }
 
-function HomeAssistantCoverPlatform(oService, oCharacteristic, oCommunicationError) {
+function FireflyCoverPlatform(oService, oCharacteristic, oCommunicationError) {
   Service = oService;
   Characteristic = oCharacteristic;
   communicationError = oCommunicationError;
 
-  return HomeAssistantCoverFactory;
+  return FireflyCoverFactory;
 }
 
-module.exports = HomeAssistantCoverPlatform;
+module.exports = FireflyCoverPlatform;
 
-module.exports.HomeAssistantCoverFactory = HomeAssistantCoverFactory;
+module.exports.FireflyCoverFactory = FireflyCoverFactory;

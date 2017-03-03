@@ -8,13 +8,9 @@ class HomeAssistantSensor {
   constructor(log, data, client, service, characteristic, transformData) {
     // device info
     this.data = data;
-    this.entity_id = data.entity_id;
-    this.uuid_base = data.entity_id;
-    if (data.attributes && data.attributes.friendly_name) {
-      this.name = data.attributes.friendly_name;
-    } else {
-      this.name = data.entity_id.split('.').pop().replace(/_/g, ' ');
-    }
+    this.entity_id = ff_id;
+    this.uuid_base = ff_id;
+    this.name = entity.alias;
 
     this.entity_type = data.entity_id.split('.')[0];
 
@@ -70,7 +66,7 @@ class HomeAssistantSensor {
     const informationService = new Service.AccessoryInformation();
 
     informationService
-          .setCharacteristic(Characteristic.Manufacturer, 'Home Assistant')
+          .setCharacteristic(Characteristic.Manufacturer, 'Firefly')
           .setCharacteristic(Characteristic.Model, 'Sensor')
           .setCharacteristic(Characteristic.SerialNumber, this.entity_id);
 
